@@ -360,15 +360,18 @@
 
         <form class="contact-form glass-card reveal reveal-delay-1" style="padding: 2rem;" onsubmit="handleFormSubmit(event)" id="contact-form">
           <div class="form-group">
-            <input type="text" class="form-input" id="form-name" placeholder="Il tuo nome" required autocomplete="name">
+            <label for="name">Nome</label>
+            <input type="text" id="name" name="name" required placeholder="Il tuo nome">
           </div>
           <div class="form-group">
-            <input type="email" class="form-input" id="form-email" placeholder="La tua email" required autocomplete="email">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required placeholder="tua@email.com">
           </div>
           <div class="form-group">
-            <textarea class="form-textarea" id="form-message" placeholder="Il tuo messaggio..." required></textarea>
+            <label for="message">Messaggio</label>
+            <textarea id="message" name="message" rows="5" required placeholder="Come posso aiutarti?"></textarea>
           </div>
-          <button type="submit" class="btn-submit" id="form-submit">
+          <button type="submit" class="btn btn-submit" id="form-submit">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -3px; margin-right: 6px;">
               <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
             </svg>
@@ -434,20 +437,53 @@
   <!-- Scripts -->
   <script src="script.js"></script>
   <script>
-    function handleFormSubmit(e) {
+    async function handleFormSubmit(e) {
       e.preventDefault();
+      const form = e.target;
       const btn = document.getElementById('form-submit');
       const originalText = btn.innerHTML;
-      btn.innerHTML = '✓ Messaggio inviato!';
-      btn.style.background = 'linear-gradient(135deg, #059669, #06b6d4)';
+      
+      // CAMBIA QUI: Sostituisci "YOUR_FORMSPREE_ID" con l'ID che ti darà Formspree
+      // Esempio: const endpoint = 'https://formspree.io/f/xabcdefg';
+      const endpoint = 'https://formspree.io/f/YOUR_FORMSPREE_ID';
+      
+      if (endpoint.includes('YOUR_FORMSPREE_ID')) {
+        alert('Attenzione: Devi inserire il tuo ID Formspree nel file index.html (riga 445) per far funzionare le email!');
+        return;
+      }
+
+      btn.innerHTML = 'Invio in corso...';
       btn.disabled = true;
+
+      const data = new FormData(form);
+
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          body: data,
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          btn.innerHTML = '✓ Messaggio inviato!';
+          btn.style.background = 'linear-gradient(135deg, #059669, #06b6d4)';
+          form.reset();
+        } else {
+          btn.innerHTML = '❌ Errore nell\'invio';
+          btn.style.background = 'linear-gradient(135deg, #ef4444, #b91c1c)';
+        }
+      } catch (error) {
+        btn.innerHTML = '❌ Errore di rete';
+        btn.style.background = 'linear-gradient(135deg, #ef4444, #b91c1c)';
+      }
 
       setTimeout(() => {
         btn.innerHTML = originalText;
         btn.style.background = '';
         btn.disabled = false;
-        document.getElementById('contact-form').reset();
-      }, 3000);
+      }, 4000);
     }
   </script>
 </body>
