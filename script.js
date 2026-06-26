@@ -379,35 +379,34 @@ const LANG_COLORS = {
   null: '#8b8b8b',
 };
 
-// Featured repos to highlight
-const FEATURED_REPOS = [
-  'VGCCollector',
-  'lyriks',
-  'it.unicam.cs.pa2022.Jlogo',
-  'PlatformerTutorial',
-  'ASDL2021-NAPPO-DAVIDE',
-  'ProgettoSistemiOperativi',
-  'JavaRogueLike',
-  'Web3D',
+// Featured repos to fetch (can be from different users)
+const TARGET_REPOS = [
+  'Napper19/VGCCollector',
+  'marco-tarabelli/ProjectBigData',
+  'lorevange/CSD_Project_App-frontend',
+  'lorevange/CSD_Project_App-backend',
+  'Elmicass/PersonalizedMenu-KEBI_Project',
+  'Napper19/lyriks',
+  'Napper19/it.unicam.cs.pa2022.Jlogo',
+  'Napper19/PlatformerTutorial',
+  'Napper19/ASDL2021-NAPPO-DAVIDE',
+  'Napper19/ProgettoSistemiOperativi',
+  'Napper19/Web3D'
 ];
 
-// Friendly descriptions for repos without one
+// Friendly descriptions for repos without one or to override
 const REPO_DESCRIPTIONS = {
   'VGCCollector': 'Extended Reality app — Collectible card game in VR/AR built with Unity and C#.',
+  'ProjectBigData': 'Big Data analytics pipeline using PySpark and distributed computing frameworks.',
+  'CSD_Project_App-frontend': 'Frontend for a distributed application system built with modern web technologies.',
+  'CSD_Project_App-backend': 'Backend microservices and API for a distributed application system.',
+  'PersonalizedMenu-KEBI_Project': 'Interactive personalized menu system developed as a team project.',
   'lyriks': 'Music discovery web app built with React and Shazam Core API for real-time lyrics and song discovery.',
   'it.unicam.cs.pa2022.Jlogo': 'Advanced Programming project — JLogo interpreter implementing the Logo graphics language in Java.',
   'PlatformerTutorial': 'A 2D platformer game engine and demo built from scratch in Java with custom physics and rendering.',
   'ASDL2021-NAPPO-DAVIDE': 'Data Structures & Algorithms course project — implementations of core data structures in Java.',
   'ProgettoSistemiOperativi': 'Operating Systems project — process scheduling and memory management algorithms implemented in C.',
-  'JavaRogueLike': 'A procedurally-generated roguelike dungeon crawler game developed in Java.',
   'Web3D': '3D web application exploring WebGL and Three.js for interactive 3D experiences.',
-  'ProjectBigData': 'Big Data analytics pipeline using PySpark and distributed computing frameworks.',
-  'BigDataDockerImage1': 'Containerized Big Data development environment using Docker and Hadoop ecosystem.',
-  'SPM-Lab-': 'Software Process Management laboratory — Agile methodology and JUnit testing practices.',
-  'SPM-2024-2025-JunitTests-main': 'JUnit test suite for Software Process Management course projects.',
-  'SPM2024-20252': 'Software Process Management collaborative project and exercises.',
-  'SPM2024-2025': 'Software Process Management course repository with examples and assignments.',
-  'Napper19': 'GitHub profile configuration repository.',
 };
 
 async function fetchGitHubRepos() {
@@ -416,20 +415,17 @@ async function fetchGitHubRepos() {
   if (!grid) return;
 
   try {
-    const response = await fetch(
-      `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=30`
+    // Fetch all targeted repos in parallel
+    const responses = await Promise.all(
+      TARGET_REPOS.map(repo => fetch(`https://api.github.com/repos/${repo}`))
     );
 
-    if (!response.ok) throw new Error('GitHub API error');
+    const reposData = await Promise.all(
+      responses.map(res => res.ok ? res.json() : null)
+    );
 
-    const repos = await response.json();
-
-    // Filter out the profile config repo, keep only featured, and sort featured first
-    const filtered = repos
-      .filter((r) => r.name !== GITHUB_USERNAME && !r.fork && FEATURED_REPOS.includes(r.name))
-      .sort((a, b) => {
-        return FEATURED_REPOS.indexOf(a.name) - FEATURED_REPOS.indexOf(b.name);
-      });
+    // Filter out failed requests and keep them in the order of TARGET_REPOS
+    const filtered = reposData.filter(Boolean);
 
     // Extract unique languages for filter
     const languages = [...new Set(filtered.map((r) => r.language).filter(Boolean))];
@@ -468,7 +464,7 @@ function renderProjects(repos, grid) {
     const desc = repo.description || REPO_DESCRIPTIONS[repo.name] || 'No description available.';
     const lang = repo.language || 'Misc';
     const langColor = LANG_COLORS[repo.language] || LANG_COLORS[null];
-    const isFeatured = FEATURED_REPOS.includes(repo.name);
+    const isFeatured = TARGET_REPOS.slice(0, 5).some(t => t.endsWith(repo.name));
 
     const card = document.createElement('div');
     card.className = 'project-card glass-card reveal';
