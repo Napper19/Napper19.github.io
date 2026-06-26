@@ -56,6 +56,97 @@
   --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
+/* --- Light Theme --- */
+[data-theme="light"] {
+  --bg-primary: #f8f9fc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f0f1f5;
+  --bg-glass: rgba(0, 0, 0, 0.03);
+  --bg-glass-hover: rgba(0, 0, 0, 0.06);
+  --border-glass: rgba(0, 0, 0, 0.1);
+  --border-glass-hover: rgba(0, 0, 0, 0.18);
+
+  --text-primary: #1a1a2e;
+  --text-secondary: #4a4a68;
+  --text-muted: #8888a0;
+
+  --shadow-glow-sm: 0 0 15px rgba(124, 58, 237, 0.1);
+  --shadow-glow-md: 0 0 30px rgba(124, 58, 237, 0.12);
+  --shadow-glow-lg: 0 0 60px rgba(124, 58, 237, 0.15);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .navbar {
+  background: rgba(248, 249, 252, 0.85);
+}
+
+[data-theme="light"] .loading-screen {
+  background: #f8f9fc;
+}
+
+[data-theme="light"] .noise-overlay {
+  opacity: 0.015;
+}
+
+[data-theme="light"] .hero-orbs .orb {
+  opacity: 0.08;
+}
+
+[data-theme="light"] .glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .modal-content {
+  background: #fff;
+}
+
+[data-theme="light"] .code-body {
+  background: #1e1e2e;
+}
+
+[data-theme="light"] .cursor-dot {
+  background: rgba(124, 58, 237, 0.7);
+}
+
+[data-theme="light"] ::selection {
+  background: rgba(124, 58, 237, 0.2);
+}
+
+[data-theme="light"] .scroll-progress {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* --- Theme Toggle Button --- */
+.theme-toggle {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-glass);
+  border-radius: 50%;
+  background: var(--bg-glass);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent-1);
+  color: var(--accent-1-light);
+  box-shadow: var(--shadow-glow-sm);
+}
+
+/* In dark mode: show sun, hide moon */
+.icon-sun { display: block; }
+.icon-moon { display: none; }
+
+/* In light mode: show moon, hide sun */
+[data-theme="light"] .icon-sun { display: none; }
+[data-theme="light"] .icon-moon { display: block; }
+
 /* --- Reset & Base --- */
 *,
 *::before,
