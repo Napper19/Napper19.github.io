@@ -359,6 +359,10 @@
         </div>
 
         <form class="contact-form glass-card reveal reveal-delay-1" style="padding: 2rem;" onsubmit="handleFormSubmit(event)" id="contact-form">
+          <input type="hidden" name="_subject" value="Nuovo messaggio dal sito!">
+          <input type="hidden" name="_captcha" value="false">
+          <input type="hidden" name="_template" value="table">
+          <input type="text" name="_honey" style="display:none">
           <div class="form-group">
             <label for="form-name" class="sr-only">Nome</label>
             <input type="text" class="form-input" id="form-name" name="name" placeholder="Il tuo nome" required autocomplete="name">
@@ -442,15 +446,6 @@
       const form = e.target;
       const btn = document.getElementById('form-submit');
       const originalText = btn.innerHTML;
-      
-      // CAMBIA QUI: Sostituisci "YOUR_FORMSPREE_ID" con l'ID che ti darà Formspree
-      // Esempio: const endpoint = 'https://formspree.io/f/xabcdefg';
-      const endpoint = 'https://formspree.io/f/YOUR_FORMSPREE_ID';
-      
-      if (endpoint.includes('YOUR_FORMSPREE_ID')) {
-        alert('Attenzione: Devi inserire il tuo ID Formspree nel file index.html (riga 445) per far funzionare le email!');
-        return;
-      }
 
       btn.innerHTML = 'Invio in corso...';
       btn.disabled = true;
@@ -458,7 +453,7 @@
       const data = new FormData(form);
 
       try {
-        const response = await fetch(endpoint, {
+        const response = await fetch('https://formsubmit.co/ajax/davide.nappo01@gmail.com', {
           method: 'POST',
           body: data,
           headers: {
