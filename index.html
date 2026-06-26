@@ -453,6 +453,19 @@
     </div>
   </div>
 
+  <!-- ========== VIDEO MODAL ========== -->
+  <div class="modal-overlay" id="video-overlay"></div>
+  <div class="modal" id="video-modal" aria-hidden="true" role="dialog">
+    <div class="modal-content" style="max-width: 900px; padding: 1rem;">
+      <button class="modal-close" id="video-close" aria-label="Chiudi video">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div id="video-container" style="position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px;">
+        <!-- Iframe injected by JS to prevent background loading -->
+      </div>
+    </div>
+  </div>
+
   <!-- ========== BACK TO TOP ========== -->
   <button class="back-to-top" id="back-to-top" aria-label="Torna su">
     <svg class="back-to-top-progress" viewBox="0 0 46 46">

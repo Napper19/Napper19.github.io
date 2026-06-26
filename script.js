@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initBackToTop();
   initParallax();
   initBlog();
+  setupVideoModal();
 });
 
 /* ============================================
@@ -506,7 +507,11 @@ function renderProjects(repos, grid) {
     card.style.cursor = 'pointer';
     card.addEventListener('click', (e) => {
       if (!e.target.closest('a')) {
-        window.open(repo.html_url, '_blank');
+        if (repo.name === 'Web3D') {
+          openVideoModal('https://drive.google.com/file/d/1bneH_07KD61sjYIDkp41rRNnS3-xITdG/preview');
+        } else {
+          window.open(repo.html_url, '_blank');
+        }
       }
     });
 
@@ -913,4 +918,40 @@ function closeModal() {
   const modal = document.getElementById('post-modal');
   modal.classList.add('hidden');
   document.body.style.overflow = '';
+}
+
+/* ============================================
+   VIDEO MODAL LOGIC
+   ============================================ */
+function setupVideoModal() {
+  const modal = document.getElementById('video-modal');
+  const closeBtn = document.getElementById('video-close');
+  const overlay = document.getElementById('video-overlay');
+  
+  if(!modal) return;
+
+  closeBtn.addEventListener('click', closeVideoModal);
+  overlay.addEventListener('click', closeVideoModal);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeVideoModal();
+  });
+}
+
+function openVideoModal(videoUrl) {
+  const modal = document.getElementById('video-modal');
+  const container = document.getElementById('video-container');
+  
+  container.innerHTML = `<iframe src="${videoUrl}" width="100%" height="100%" style="position: absolute; top: 0; left: 0; border: none; border-radius: 8px;" allow="autoplay"></iframe>`;
+  
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeVideoModal() {
+  const modal = document.getElementById('video-modal');
+  const container = document.getElementById('video-container');
+  
+  modal.classList.add('hidden');
+  document.body.style.overflow = '';
+  container.innerHTML = ''; // Stop the video
 }
