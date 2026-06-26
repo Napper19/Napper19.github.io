@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Scrivi Post</title>
+  <meta name="robots" content="noindex">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+    
+    :root {
+      --bg: #06060b;
+      --card: #13131f;
+      --border: rgba(255,255,255,0.1);
+      --text: #e4e4e7;
+      --primary: #7c3aed;
+      --primary-hover: #6d28d9;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 2rem;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    h1 { margin-bottom: 1.5rem; font-size: 1.8rem; }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.75rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: white;
+      border-radius: 8px;
+      font-family: inherit;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover { background: var(--primary-hover); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    #editor-section { display: none; }
+
+    .status {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+      display: none;
+    }
+    .status.success { background: rgba(16, 185, 129, 0.2); color: #10b981; display: block; }
+    .status.error { background: rgba(239, 68, 68, 0.2); color: #ef4444; display: block; }
+
+    /* Helper per codifica UTF-8 base64 */
+    .note { font-size: 0.85rem; color: #a1a1aa; margin-top: 0.25rem; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- LOGIN -->
+    <div class="card" id="login-section">
+      <h1>Admin Login</h1>
+      <p style="margin-bottom: 1.5rem; color: #a1a1aa;">Inserisci il tuo Personal Access Token di GitHub per pubblicare post sul tuo sito.</p>
+      <div class="form-group">
+        <label>GitHub Token (PAT)</label>
+        <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxx">
+        <div class="note">Il token viene salvato solo nel tuo browser (localStorage). Assicurati che abbia i permessi "repo".</div>
+      </div>
+      <button onclick="login()">Accedi</button>
+    </div>
+
+    <!-- EDITOR -->
+    <div class="card" id="editor-section">
+      <h1>Nuovo Post</h1>
+      
+      <div class="form-group">
+        <label>Titolo</label>
+        <input type="text" id="post-title" placeholder="Es. Riflessioni sul nuovo framework...">
+      </div>
+      
+      <div class="form-group">
+        <label>Categoria</label>
+        <select id="post-category">
+          <option value="tech">Tech (💻)</option>
+          <option value="videogiochi">Videogiochi (🎮)</option>
+          <option value="film">Film (🎬)</option>
+          <option value="libri">Libri (📚)</option>
+          <option value="pensieri">Pensieri (💭)</option>
+          <option value="coding">Coding (⚙️)</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>Tags (separati da virgola)</label>
+        <input type="text" id="post-tags" placeholder="Es. React, Riflessioni, Frontend">
+      </div>
+      
+      <div class="form-group">
+        <label>Riassunto (Excerpt)</label>
+        <textarea id="post-excerpt" rows="2" placeholder="Breve descrizione di 1-2 righe..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Contenuto (Usa tag HTML come &lt;p&gt;, &lt;strong&gt;, &lt;h3&gt;)</label>
+        <textarea id="post-content" rows="10" placeholder="<p>Oggi voglio parlare di...</p>"></textarea>
+      </div>
+
+      <button id="btn-publish" onclick="publishPost()">Pubblica Post sul Sito</button>
+      <button style="background: transparent; border: 1px solid var(--border); margin-left: 10px;" onclick="logout()">Esci</button>
+      
+      <div id="status-msg" class="status"></div>
+    </div>
+
+  </div>
+
+  <script>
+    const REPO = 'Napper19/Napper19.github.io';
+    const FILE_PATH = 'posts.json';
+
+    // UTF-8 to Base64 encode/decode
+    function utf8_to_b64(str) { return window.btoa(unescape(encodeURIComponent(str))); }
+    function b64_to_utf8(str) { return decodeURIComponent(escape(window.atob(str))); }
+
+    // Init
+    window.onload = () => {
+      if(localStorage.getItem('gh_token')) {
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('editor-section').style.display = 'block';
+      }
+    };
+
+    function login() {
+      const token = document.getElementById('gh-token').value.trim();
+      if(token) {
+        localStorage.setItem('gh_token', token);
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('editor-section').style.display = 'block';
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('gh_token');
+      document.getElementById('login-section').style.display = 'block';
+      document.getElementById('editor-section').style.display = 'none';
+    }
+
+    async function publishPost() {
+      const token = localStorage.getItem('gh_token');
+      const btn = document.getElementById('btn-publish');
+      const status = document.getElementById('status-msg');
+      
+      const title = document.getElementById('post-title').value;
+      const category = document.getElementById('post-category').value;
+      const tags = document.getElementById('post-tags').value.split(',').map(t => t.trim()).filter(t => t);
+      const excerpt = document.getElementById('post-excerpt').value;
+      const content = document.getElementById('post-content').value;
+
+      if(!title || !excerpt || !content) {
+        status.className = 'status error';
+        status.innerText = 'Compila Titolo, Riassunto e Contenuto!';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = '1/3 Cerco il file posts.json...';
+      status.className = 'status';
+
+      try {
+        // 1. Get current posts.json
+        const getRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`, {
+          headers: { 'Authorization': `token ${token}` }
+        });
+        
+        if(!getRes.ok) throw new Error('Token non valido o permessi mancanti sul repository.');
+        const fileData = await getRes.json();
+        const sha = fileData.sha;
+        
+        // Decode existing posts
+        const currentPosts = JSON.parse(b64_to_utf8(fileData.content));
+
+        // 2. Create new post
+        const newPost = {
+          id: `post-${Date.now()}`,
+          title,
+          date: new Date().toISOString().split('T')[0],
+          category,
+          tags,
+          excerpt,
+          content
+        };
+
+        // Add to beginning of array
+        currentPosts.unshift(newPost);
+        
+        btn.innerText = '2/3 Preparo il caricamento...';
+        
+        // 3. Encode back to base64
+        const newContentB64 = utf8_to_b64(JSON.stringify(currentPosts, null, 2));
+
+        btn.innerText = '3/3 Pubblicazione su GitHub...';
+
+        // 4. Update file on GitHub
+        const updateRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `token ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: `add post: ${title} (via editor)`,
+            content: newContentB64,
+            sha: sha
+          })
+        });
+
+        if(!updateRes.ok) throw new Error('Errore durante il salvataggio su GitHub.');
+
+        status.className = 'status success';
+        status.innerText = 'Post pubblicato con successo! Il sito si aggiornerà in 1 minuto.';
+        
+        // Reset form
+        document.getElementById('post-title').value = '';
+        document.getElementById('post-tags').value = '';
+        document.getElementById('post-excerpt').value = '';
+        document.getElementById('post-content').value = '';
+
+      } catch (err) {
+        status.className = 'status error';
+        status.innerText = err.message;
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Pubblica Post sul Sito';
+      }
+    }
+  </script>
+</body>
+</html>

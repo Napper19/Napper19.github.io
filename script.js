@@ -814,15 +814,7 @@ function getReadingTime(html) {
   return Math.max(1, Math.ceil(words / 200));
 }
 
-function buildStars(rating) {
-  let html = '';
-  for (let i = 1; i <= 5; i++) {
-    if (i <= Math.floor(rating)) html += '★';
-    else if (i === Math.ceil(rating) && rating % 1 !== 0) html += '★';
-    else html += '☆';
-  }
-  return html;
-}
+
 
 function renderBlogPosts(posts) {
   const grid = document.getElementById('blog-grid');
@@ -842,7 +834,6 @@ function renderBlogPosts(posts) {
     
     const emoji = CATEGORY_EMOJI[post.category] || '📝';
     const readTime = getReadingTime(post.content);
-    const starsHtml = post.rating ? buildStars(post.rating) : '';
 
     card.innerHTML = `
       <div class="blog-meta">
@@ -852,7 +843,7 @@ function renderBlogPosts(posts) {
       <h3 class="blog-title">${post.title}</h3>
       <p class="blog-excerpt">${post.excerpt}</p>
       <div class="blog-footer">
-        ${post.rating ? `<div class="blog-rating">${starsHtml}</div>` : '<div></div>'}
+        <div></div>
         <div class="blog-read-more">Leggi <span>→</span></div>
       </div>
     `;
@@ -904,11 +895,6 @@ function openModal(post) {
   const emoji = CATEGORY_EMOJI[post.category] || '📝';
   const readTime = getReadingTime(post.content);
   const tagsHtml = (post.tags || []).map(t => `<span class="modal-tag">${t}</span>`).join('');
-  
-  let starsHtml = '';
-  if (post.rating) {
-    starsHtml = `<div class="modal-stars">${buildStars(post.rating)}</div>`;
-  }
 
   body.innerHTML = `
     <div class="blog-meta" style="margin-bottom: 1rem;">
@@ -917,7 +903,6 @@ function openModal(post) {
     </div>
     <h2>${post.title}</h2>
     <div class="modal-read-time">⏱ ${readTime} min di lettura</div>
-    ${starsHtml}
     ${tagsHtml ? `<div class="modal-tags">${tagsHtml}</div>` : ''}
     <div class="modal-content-text">
       ${post.content}
